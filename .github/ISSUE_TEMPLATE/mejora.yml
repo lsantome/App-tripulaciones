@@ -1,0 +1,7 @@
+name: Mejora
+description: Propuesta de funcionalidad
+labels: [enhancement]
+body:
+  - type: textarea
+    attributes: { label: Qué problema resuelve y cómo lo imaginas }
+    validations: { required: true }

@@ -1,0 +1,11 @@
+name: Error
+description: Algo no funciona o da un resultado incorrecto
+labels: [bug]
+body:
+  - type: textarea
+    attributes: { label: Qué ocurre y qué esperabas, description: Pasos para reproducirlo }
+    validations: { required: true }
+  - type: input
+    attributes: { label: Navegador y versión }
+  - type: textarea
+    attributes: { label: Captura o datos, description: Sin datos personales reales }
