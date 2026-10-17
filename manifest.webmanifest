@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "Optimizador de alineación de remo",
+  "short_name": "Alineación",
+  "description": "Optimiza la alineación de la tripulación en trainera, trainerilla y batel: reparto de pesos y potencia, trimado y asiento estimado.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0E1B24",
+  "theme_color": "#0E1B24",
+  "categories": ["sports", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
