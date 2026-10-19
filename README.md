@@ -2,7 +2,7 @@
 
 Herramienta web (HTML sin servidor; también **PWA instalable y con modo offline**) para **proponer y evaluar alineaciones de trainera, trainerilla y batel** según el reparto de pesos y, opcionalmente, de potencia.
 
-> **Demo:** tras activar GitHub Pages (ver [Publicar](#publicar-en-github-pages)), estará en `https://<tu-usuario>.github.io/optimizador-alineacion-remo/`, instalable como aplicación (ver [PWA](#pwa-instalable-y-sin-conexion)).
+https://lsantome.github.io/App-tripulaciones/
 
 ## Qué hace
 
