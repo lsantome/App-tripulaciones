@@ -2,11 +2,13 @@
 
 Herramienta web (HTML sin servidor; también **PWA instalable y con modo offline**) para **proponer y evaluar alineaciones de trainera, trainerilla y batel** según el reparto de pesos y, opcionalmente, de potencia.
 
-https://lsantome.github.io/App-tripulaciones/
+> **App:** https://lsantome.github.io/App-tripulaciones/ — instalable como aplicación y con modo sin conexión (ver [PWA](#pwa-instalable-y-sin-conexion)).
 
 ## Qué hace
 
 - **Multiembarcación:** trainera (13 remeros + patrón), trainerilla (6 + patrón) y batel (4 + patrón; ambos con **bancadas individuales sobre el eje**), con dimensiones y peso predefinidos y editables. Opcionalmente, un **maestro de barcos** importado desde Excel.
+
+- **Vista básica y avanzada:** por defecto solo se muestra lo defendible (peso, potencia, bandas, desplazamiento del CG). El modo avanzado añade el asiento estimado, la dispersión de masas, el desequilibrio por W/kg y los pesos del optimizador, que son heurísticas sin validar. No cambia los resultados.
 
 - **Modo automático:** optimizador (recocido simulado) que devuelve hasta **3 alineaciones** distintas.
   Prioridad seleccionable: *solo peso* (por defecto), *vatios absolutos* o *W/kg*.
@@ -63,7 +65,7 @@ Todo el código propio está en `index.html` (HTML + CSS + JS en una IIFE); `ven
 
 ## Publicar en GitHub Pages
 
-*Settings → Pages → Source: GitHub Actions*. El workflow `.github/workflows/pages.yml` ejecuta las pruebas, construye el sitio con `npm run build:pwa` y lo despliega en cada push a `main`. Al crear una etiqueta `v*` (p. ej. `v1.2.0`) publica además una *release* con la versión autónoma adjunta.
+La aplicación publicada está en **https://lsantome.github.io/App-tripulaciones/**. Para publicarla: *Settings → Pages → Source: GitHub Actions*. El workflow `.github/workflows/pages.yml` ejecuta las pruebas, construye el sitio con `npm run build:pwa` y lo despliega en cada push a `main`. Al crear una etiqueta `v*` (p. ej. `v1.2.0`) publica además una *release* con la versión autónoma adjunta.
 
 ### PWA: instalable y sin conexión
 

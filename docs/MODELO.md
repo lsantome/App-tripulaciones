@@ -34,5 +34,13 @@ Un método basado en la elipse de flotación se probó y se descartó: daba un c
 
 **Es una estimación de orden de magnitud**, no sustituye a datos hidrostáticos reales ni a una prueba de inclinación.
 
+## Qué se muestra y qué es solo una heurística
+La interfaz distingue dos niveles (interruptor **Básico / Avanzado**; solo cambia lo mostrado, no el cálculo):
+- **Siempre visibles:** peso medio frente al máximo (regla de categoría), potencia total, desequilibrio de bandas en peso y vatios, desplazamiento del CG, cuadrantes y círculo de equilibrio.
+- **Solo en avanzado:** desequilibrio por W/kg (derivado de los otros dos), asiento (el mismo desplazamiento dividido por GML ≈ eslora, con precisión aparente que no tiene), dispersión de masas (índice, no validado), homogeneidad de pareja (criterio técnico, no físico), los pesos de cada criterio en la optimización (todos 1,0, sin calibrar) y la referencia de CG.
+- **Desplazamiento del CG:** es relativo a la referencia de CG (por defecto 0,50, que equivale a suponer centro de carena y CG del casco en el centro geométrico). Compara alineaciones entre sí; el valor absoluto necesitaría la referencia real.
+- **Coeficiente de bloque:** ya no se muestra como cifra en las tarjetas. Solo comprueba, con la tripulación nominal, que eslora, manga, calado y peso son coherentes entre sí (rango razonable 0,20–0,60; solo detecta errores gruesos).
+- **Desequilibrio de bandas en peso:** índice |ΣP_babor − ΣP_estribor| / ΣP. No incluye brazo de palanca real ni calcula escora. Una estimación de la escora estática en la trainera da del orden de 0,1–0,25° por cada 10 kg de diferencia neta (supuestos: desplazamiento ≈ 1.300 kg, manga de flotación 1,4–1,7 m, KG 0,4–0,7 m; sin verificar); el balanceo dinámico no está modelado.
+
 ## No incluido
 Escora (se corrige moviendo lateralmente a los remeros), técnica, sincronía, mar y viento, y variación de potencia con la fatiga.

@@ -14,6 +14,11 @@ ok('manifest: campos obligatorios y rutas relativas', () => {
   for (const k of ['name', 'short_name', 'start_url', 'scope', 'display', 'icons', 'background_color', 'theme_color']) assert.ok(m[k], 'falta ' + k);
   assert.strictEqual(m.display, 'standalone');
   assert.ok(m.start_url.startsWith('.') && m.scope.startsWith('.'), 'start_url y scope deben ser relativos (subruta de Pages)');
+  // Chrome resuelve `id` contra el ORIGEN de start_url (no contra su carpeta): "./" o "/" darían la raíz del dominio y
+  // colisionarían con cualquier otra PWA de https://<usuario>.github.io. Debe ser un identificador propio de esta app.
+  const idResuelto = new URL(m.id, new URL(m.start_url, 'https://usuario.github.io/optimizador-alineacion-remo/').origin);
+  assert.ok(idResuelto.pathname !== '/' && idResuelto.pathname.length > 1, 'manifest.id resuelve a la raíz del origen (' + idResuelto.href + '): colisiona con otras PWA del mismo dominio');
+  assert.ok(idResuelto.pathname.includes('optimizador-alineacion-remo'), 'manifest.id debe ser único para esta app');
   assert.ok(m.short_name.length <= 12, 'short_name demasiado largo para el icono');
   const textos = JSON.stringify(m);
   assert.ok(!/"\/[^"]/.test(textos), 'rutas absolutas con "/" inicial romperían el despliegue bajo /<repo>/');

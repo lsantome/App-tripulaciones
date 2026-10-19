@@ -74,14 +74,19 @@ Una celda vacía equivale a «sin restricción» (igual que en la app). Si hay t
 ### Mapa de calor
 Casilla encima de las sub-pestañas. Colorea cada puesto de azul (ligero) a rojo (pesado) pasando por blanco, por **peso** o **potencia**. Desactivado por defecto.
 
+### Vista básica y avanzada
+El interruptor **Básico / Avanzado** de la barra superior solo cambia lo que se muestra; **no cambia el cálculo ni las alineaciones propuestas**. Se recuerda entre sesiones.
+- **Básica:** potencia total, peso de tripulación, peso medio frente al máximo, desequilibrio de bandas (peso y vatios), desplazamiento del CG, círculo de equilibrio (peso y vatios) y tabla de cuadrantes.
+- **Avanzada:** añade el desequilibrio por W/kg, el asiento estimado, la dispersión de masas (cabeceo), el punto de W/kg del círculo, los cuatro deslizadores de pesos del optimizador y la referencia de CG. Son estimaciones o heurísticas sin validar: úsalas con el mismo criterio que una regla empírica.
+
 ### Modo Automático
 1. **Categoría:** fija el peso mínimo del patrón (senior masculino 55 kg, femenino 50 kg, libre 0).
 2. **Banda del proel:** babor o estribor.
 3. **Prioridad:** *Solo peso* (no necesita potencias), *Vatios absolutos* o *W/kg* (avisan si falta algún dato).
 4. **Peso medio máximo** (toda la tripulación con patrón, 82 kg por defecto): superarlo penaliza fuerte.
-5. **Deslizadores** (0–2): desequilibrio de bandas, error de trimado, momento de cabeceo, homogeneidad de pareja.
+5. **Deslizadores** (0–2, solo en vista avanzada): desequilibrio de bandas, desplazamiento del CG, dispersión de masas (cabeceo), homogeneidad de pareja. Los valores por defecto (1,0) no están calibrados con datos de regatas.
 6. **Remeros disponibles:** desmarca lesionados o ausentes.
-7. **Parámetros avanzados:** trimado objetivo (0,50 = centro). El peso del casco se ajusta en el panel **Barco**.
+7. **Parámetros avanzados** (solo en vista avanzada): referencia de CG (0,50 = centro geométrico; es una hipótesis: si conoces el centro de carena real del barco, introdúcelo). El peso del casco se ajusta en el panel **Barco**.
 8. **Optimizar alineación** → hasta 3 propuestas (Alineación A/B/C), cada una con su esquema y métricas.
 
 ### Modo Manual
@@ -91,9 +96,12 @@ Arrastra una ficha del **Banco** a un puesto (o pulsa ficha y luego puesto). *Va
 
 - **Desequilibrio de bandas** (peso, vatios, W/kg): diferencia babor − estribor, sin contar patrón ni proel en peso. Cerca de 0 es mejor.
 - **Cuadrantes** (proa/popa × babor/estribor): tabla única con sumas por banda, por proa/popa y total. Patrón y proel cuentan en proa/popa pero no en bandas.
-- **Gráfico circular:** proa arriba, popa abajo. Tres marcadores: peso, vatios, W/kg. La escala vertical es 2,5× el umbral de trimado.
+- **Gráfico circular:** proa arriba, popa abajo. Marcadores de peso y vatios (y W/kg en vista avanzada). La escala vertical es 2,5× el umbral de desplazamiento del CG.
 - **Trimado = momento, no kilos.** Importa `peso × distancia al centro`. Por eso puede haber más kilos en popa y que el centro de gravedad no vaya hacia popa: un proel ligero en el extremo de proa puede compensar con su brazo largo. La nota «Momento de Proa/Popa» lo muestra.
-- **Asiento estimado:** ángulo y desviación en cm. Umbral de aviso = 2 % de la eslora (24 cm en 12 m). Es **orientativo** (ver [MODELO.md](MODELO.md)).
+- **Desplazamiento del CG:** distancia en cm entre el centro de gravedad longitudinal (tripulación + casco) y la referencia de CG; positivo = hacia popa. Umbral de aviso = 2 % de la eslora (24 cm en 12 m). Sirve para **comparar alineaciones entre sí**; su valor absoluto depende de que la referencia (0,50 por defecto) sea la real.
+- **Asiento estimado** (vista avanzada): el mismo desplazamiento convertido en ángulo con GML ≈ eslora. Es solo un **orden de magnitud** (ver [MODELO.md](MODELO.md)).
+- **Dispersión de masas (cabeceo)** (vista avanzada): índice relativo de cuánto peso hay lejos del CG. No es un ángulo de cabeceo ni está validado.
+- **Aviso de dimensiones:** si con la tripulación nominal (remeros de 80 kg, patrón de 60 kg) el coeficiente de bloque sale fuera de 0,20–0,60, el panel **Barco** muestra un ⚠ para que revises eslora, manga, calado y peso (por ejemplo, una eslora tecleada en cm).
 
 ## 5. Exportar a Excel
 Genera tres hojas: **Tripulación** (puesto, rol, banda, nombre, peso, potencia, potencia efectiva, W/kg), **Desglose** (tabla de cuadrantes con totales; proel y patrón aparte) y **Resumen** (los tres desequilibrios).

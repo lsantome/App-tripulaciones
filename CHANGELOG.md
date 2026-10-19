@@ -1,7 +1,15 @@
 # Changelog
 
+## 1.3.0
+- **Vista básica / avanzada** (interruptor en la barra superior, se recuerda entre sesiones). Solo cambia lo mostrado; el cálculo y las alineaciones propuestas no cambian. En básico se ocultan: desequilibrio por W/kg (y su punto en el círculo), asiento estimado, dispersión de masas, los cuatro deslizadores de pesos del optimizador y los parámetros avanzados.
+- **Renombres:** «Desvío de trimado» → «Desplazamiento del CG» (respecto a la referencia), «Trimado objetivo» → «Referencia de CG», «Momento de cabeceo» → «Dispersión de masas (cabeceo)», con textos que indican que son heurísticas no validadas. La exportación a Excel usa los nombres nuevos.
+- **Coeficiente de bloque:** se retira la cifra de la tarjeta de asiento; el panel Barco avisa con un ⚠ cuando, con la tripulación nominal, sale fuera de 0,20–0,60 (o faltan eslora, manga o calado).
+- README: enlace a la aplicación publicada (https://lsantome.github.io/App-tripulaciones/).
+- Tests nuevos: la vista no cambia el cálculo, qué se ve en cada vista, y el aviso de coherencia por tipo de barco. Verificado en Chromium (persistencia de la vista, los tres barcos, exportación, PWA).
+
 ## 1.2.0
 - **PWA:** `manifest.webmanifest`, iconos (192, 512, maskable, apple-touch) y `sw.js` con precaché versionado por hash del contenido. Instalable y con modo offline completo bajo la subruta de GitHub Pages. Aviso de nueva versión con botón *Actualizar* (no recarga sola).
+- **Corrección de identidad:** `id` del manifest = `optimizador-alineacion-remo`. Con `./` Chrome lo resolvía a la raíz del dominio y chocaba con otras PWA de `<usuario>.github.io` (Chrome pedía «Revisar actualizaciones de logotipo y nombre»). Test añadido.
 - `npm run build:pwa` genera `dist/site` (PWA + versión autónoma + ejemplos); el workflow de Pages lo despliega. La versión autónoma sigue sin dependencias y sin partes PWA.
 - Nuevas pruebas (`tests/pwa.js`): manifest, iconos, rutas relativas, precaché, determinismo de la versión y limpieza del autónomo. Verificado en Chromium: instalabilidad, recarga sin conexión sin peticiones al servidor y flujo de actualización.
 

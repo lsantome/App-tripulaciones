@@ -85,6 +85,10 @@
     font-family:var(--font-mono); font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em;
   }
 
+  .topbar-acciones{display:flex; align-items:center; gap:18px; flex-wrap:wrap;}
+  body:not(.modo-avanzado) .solo-avanzado{display:none !important;}
+  .subhead-avanzado{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-dim2); margin:18px 0 6px;}
+
   .main-tabs{display:flex; gap:0; padding:14px clamp(16px,4vw,48px) 0; max-width:1560px; margin:0 auto; border-bottom:1px solid var(--line);}
   .main-tab-btn{
     background:transparent; border:none; border-bottom:2px solid transparent; color:var(--text-dim);
@@ -340,10 +344,16 @@
 
 <div class="topbar">
   <h1>Optimizador de alineación de remo</h1>
-  <button type="button" class="theme-switch" id="btnTema" aria-pressed="false" aria-label="Cambiar a modo claro">
-    <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
-    <span class="theme-switch-label" id="temaLabel">Oscuro</span>
-  </button>
+  <div class="topbar-acciones">
+    <button type="button" class="theme-switch" id="btnAvanzado" aria-pressed="false" aria-label="Activar modo avanzado" title="Muestra métricas e hipótesis adicionales (asiento, cabeceo, W/kg, pesos del optimizador). No cambia los resultados del optimizador.">
+      <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
+      <span class="theme-switch-label" id="avanzadoLabel">Básico</span>
+    </button>
+    <button type="button" class="theme-switch" id="btnTema" aria-pressed="false" aria-label="Cambiar a modo claro">
+      <span class="theme-switch-track"><span class="theme-switch-thumb"></span></span>
+      <span class="theme-switch-label" id="temaLabel">Oscuro</span>
+    </button>
+  </div>
 </div>
 
 <div class="main-tabs">
@@ -442,7 +452,7 @@
       <button class="btn btn-sm btn-ghost" id="btnRestablecerBarco" type="button">Restablecer valores</button>
     </div>
     <div class="pool-meta" id="infoBarco"></div>
-    <div class="help" style="margin-top:8px;">El asiento estimado usa GML ≈ eslora (regla empírica, orden de magnitud) y el calado solo para comprobar el coeficiente de bloque. Para trainerilla y batel el calado y la posición de las bancadas son estimaciones: ajústalos si conoces los datos reales.</div>
+    <div class="help" style="margin-top:8px;">Para trainerilla y batel el calado y la posición de las bancadas son estimaciones: ajústalos si conoces los datos reales.<span class="solo-avanzado"> El asiento estimado usa GML ≈ eslora (regla empírica, orden de magnitud); el calado solo sirve para comprobar la coherencia de las dimensiones (coeficiente de bloque con tripulación nominal).</span></div>
   </section>
 
   <div class="mapa-calor-controles">
@@ -510,23 +520,26 @@
           <input type="number" id="inpPesoMedioObjetivo" value="82" min="50" max="120" step="1">
         </div>
 
-        <div class="slider-row">
+        <div class="subhead-avanzado solo-avanzado">Peso de cada criterio en la optimización</div>
+        <div class="help solo-avanzado" style="margin-bottom:8px;">Valores por defecto (1,0) sin calibrar: no están ajustados con datos de regatas. Cambiarlos modifica las alineaciones propuestas.</div>
+
+        <div class="slider-row solo-avanzado">
           <div class="row-top"><label>Desequilibrio de bandas <span class="info-tip" tabindex="0" data-tooltip="Penaliza la diferencia entre babor y estribor (de peso en modo «solo peso», de potencia en los otros dos): un desequilibrio alto obliga al patrón a corregir el rumbo con la espadilla en cada palada. Valor 0 = lo ignora por completo. Valor 2 = prioriza al máximo igualar ambas bandas, aunque cueste otras cosas.">ⓘ</span></label><span class="val" id="valBanda">1.0</span></div>
           <input type="range" id="sldBanda" min="0" max="2" step="0.1" value="1.0">
         </div>
 
-        <div class="slider-row">
-          <div class="row-top"><label>Error de trimado <span class="info-tip" tabindex="0" data-tooltip="Penaliza que el centro de gravedad longitudinal real se aleje del trimado objetivo (ver parámetros avanzados). Valor 0 = no le importa dónde quede el centro de gravedad. Valor 2 = fuerza al máximo que coincida con el objetivo.">ⓘ</span></label><span class="val" id="valTrim">1.0</span></div>
+        <div class="slider-row solo-avanzado">
+          <div class="row-top"><label>Desplazamiento del CG <span class="info-tip" tabindex="0" data-tooltip="Penaliza que el centro de gravedad longitudinal (tripulación + casco) se aleje de la referencia de CG (ver parámetros avanzados). Valor 0 = no le importa dónde quede el centro de gravedad. Valor 2 = fuerza al máximo que coincida con la referencia.">ⓘ</span></label><span class="val" id="valTrim">1.0</span></div>
           <input type="range" id="sldTrim" min="0" max="2" step="0.1" value="1.0">
         </div>
 
-        <div class="slider-row">
-          <div class="row-top"><label>Momento de cabeceo <span class="info-tip" tabindex="0" data-tooltip="Penaliza concentrar peso en los extremos del barco (proel y patrón) frente al centro, para que el casco responda antes al perfil de cada ola. Valor 0 = no penaliza esa concentración. Valor 2 = penaliza al máximo tener peso en los extremos.">ⓘ</span></label><span class="val" id="valPitch">1.0</span></div>
+        <div class="slider-row solo-avanzado">
+          <div class="row-top"><label>Dispersión de masas (cabeceo) <span class="info-tip" tabindex="0" data-tooltip="Índice de dispersión de masas respecto al CG: penaliza concentrar peso en los extremos (proel y patrón) frente al centro. Es una heurística no validada: no calcula el cabeceo real. Valor 0 = no penaliza esa concentración. Valor 2 = penaliza al máximo tener peso en los extremos.">ⓘ</span></label><span class="val" id="valPitch">1.0</span></div>
           <input type="range" id="sldPitch" min="0" max="2" step="0.1" value="1.0">
         </div>
 
-        <div class="slider-row">
-          <div class="row-top"><label>Homogeneidad de pareja <span class="info-tip" tabindex="0" data-tooltip="Penaliza que los dos remeros de una misma bancada estén muy desequilibrados entre sí (de peso o de potencia según el modo). Valor 0 = no le importa. Valor 2 = busca parejas muy igualadas, incluso si eso reparte peor al resto.">ⓘ</span></label><span class="val" id="valPareja">1.0</span></div>
+        <div class="slider-row solo-avanzado">
+          <div class="row-top"><label>Homogeneidad de pareja <span class="info-tip" tabindex="0" data-tooltip="Criterio técnico, no físico: penaliza que los dos remeros de una misma bancada estén muy desequilibrados entre sí (de peso o de potencia según el modo). Valor 0 = no le importa. Valor 2 = busca parejas muy igualadas, incluso si eso reparte peor al resto.">ⓘ</span></label><span class="val" id="valPareja">1.0</span></div>
           <input type="range" id="sldPareja" min="0" max="2" step="0.1" value="1.0">
         </div>
 
@@ -541,11 +554,11 @@
           </div>
         </details>
 
-        <details class="advanced">
+        <details class="advanced solo-avanzado">
           <summary>Parámetros avanzados</summary>
           <div style="margin-top:12px;">
             <div class="slider-row">
-              <div class="row-top"><label>Trimado objetivo (0=proa, 1=popa) <span class="info-tip" tabindex="0" data-tooltip="Posición longitudinal ideal del centro de gravedad de toda la tripulación + casco. 0 = todo el peso a proa, 1 = todo a popa, 0.50 = centrado.">ⓘ</span></label><span class="val" id="valTrimObj">0.50</span></div>
+              <div class="row-top"><label>Referencia de CG (0=proa, 1=popa) <span class="info-tip" tabindex="0" data-tooltip="Posición longitudinal del centro de gravedad de tripulación + casco a la que se supone que el barco flota «plano» (0 = proa, 1 = popa). Por defecto 0,50 (centro geométrico): es una hipótesis, no una medida. Si conoces el centro de carena real del barco, introdúcelo aquí.">ⓘ</span></label><span class="val" id="valTrimObj">0.50</span></div>
               <input type="range" id="sldTrimObj" min="0.30" max="0.70" step="0.01" value="0.50">
             </div>
           </div>
@@ -686,6 +699,7 @@ let state = {
     wTrim: 1.0,
     wPitch: 1.0,
     wPareja: 1.0,
+    modoAvanzado: false, // vista avanzada: solo cambia lo que se muestra, no el cálculo
     eslora: 12,
     manga: 1.72,
     puntal: 0.95,
@@ -965,7 +979,7 @@ function calcularTablaUnificada(asignacion){
 const DENSIDAD_AGUA_MAR = 1025; // kg/m3
 function umbralTrimCm(){
   // 2% de la eslora (24 cm para 12 m) como umbral de aviso — el mismo criterio se usa
-  // para la tarjeta "Desvío de trimado" y para escalar el eje N-S del círculo de equilibrio
+  // para la tarjeta "Desplazamiento del CG" y para escalar el eje N-S del círculo de equilibrio
   return state.config.eslora > 0 ? state.config.eslora * 100 * 0.02 : 24;
 }
 function calcularAsiento(ev){
@@ -1171,6 +1185,24 @@ function escaparHtml(t){
   return String(t).replace(/[&<>"']/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; });
 }
 
+/* Coeficiente de bloque con la tripulación nominal (remeros de 80 kg, patrón de 60 kg): comprueba que eslora, manga, calado y peso
+   del casco son coherentes entre sí, con independencia de quién esté asignado. Solo avisa de errores gruesos (p. ej. eslora en cm). */
+const CB_RANGO_RAZONABLE = [0.20, 0.60];
+function cbNominal(){
+  const c = state.config;
+  if(!(c.eslora > 0 && c.manga > 0 && c.calado > 0)) return null;
+  const desplazamiento = (c.pesoCasco || 0) + 80 * SLOTS_REMERO.length + 60;
+  return desplazamiento / (DENSIDAD_AGUA_MAR * c.eslora * c.manga * c.calado);
+}
+function avisoCb(){
+  const cb = cbNominal();
+  if(cb === null) return 'faltan eslora, manga o calado: no se puede comprobar la coherencia de las dimensiones';
+  if(cb >= CB_RANGO_RAZONABLE[0] && cb <= CB_RANGO_RAZONABLE[1]) return '';
+  return 'dimensiones poco coherentes: con tripulación nominal (remeros de 80 kg, patrón de 60 kg) el coeficiente de bloque sale ' + fmt(cb,2) +
+    ' y lo esperable es ' + fmt(CB_RANGO_RAZONABLE[0],2) + '–' + fmt(CB_RANGO_RAZONABLE[1],2) + '. Revisa eslora, manga, calado y peso del casco';
+}
+function avanzado(){ return !!state.config.modoAvanzado; }
+
 function actualizarInfoBarco(){
   const el = document.getElementById('infoBarco');
   if(!el) return;
@@ -1178,8 +1210,10 @@ function actualizarInfoBarco(){
   let msg = t.label + ': ' + SLOTS_REMERO.length + ' remeros (' + (t.individual ? t.nBancadas + ' bancadas individuales sobre el eje' : t.nBancadas + ' bancadas dobles' + (t.proel ? ' + proel' : '')) + ') + patrón = ' + SLOTS.length + ' tripulantes · peso mínimo del casco ' + t.peso + ' kg';
   const bajo = state.config.pesoCasco < t.peso;
   if(bajo) msg += ' · ⚠ el peso indicado (' + state.config.pesoCasco + ' kg) está por debajo del mínimo';
+  const avisoCbTxt = avisoCb();
+  if(avisoCbTxt) msg += ' · ⚠ ' + avisoCbTxt;
   el.textContent = msg;
-  el.className = 'pool-meta' + (bajo ? ' warn' : '');
+  el.className = 'pool-meta' + ((bajo || avisoCbTxt) ? ' warn' : '');
 }
 
 function sincronizarBarco(){
@@ -1594,8 +1628,8 @@ function exportarTripulacionExcel(asignacion, nombreArchivo){
     ['Desequilibrio de bandas — vatios (%)', ev.imbalancePotencia !== null ? Math.round(ev.imbalancePotencia*1000)/10 : 'sin datos de potencia'],
     ['Desequilibrio de bandas — W/kg (%)', ev.imbalanceWkg !== null ? Math.round(ev.imbalanceWkg*1000)/10 : 'sin datos de potencia'],
     ['Centro de gravedad longitudinal (0=proa,1=popa)', Math.round(ev.xcg*1000)/1000],
-    ['Trimado objetivo (0=proa,1=popa)', state.config.xTrimObjetivo],
-    ['Desvío de trimado (cm sobre ' + state.config.eslora + ' m de eslora)', desvTrimCm],
+    ['Referencia de CG (0=proa,1=popa)', state.config.xTrimObjetivo],
+    ['Desplazamiento del CG respecto a la referencia (cm sobre ' + state.config.eslora + ' m de eslora; + hacia popa)', desvTrimCm],
     ['Momento de cabeceo relativo (%)', Math.round(ev.iPitchNorm*1000)/10],
     ['Categoría', CATEGORIAS[state.config.categoria].label],
     ['Barco (tipo)', tipoActual().label],
@@ -2028,19 +2062,20 @@ function renderMetricsHTML(ev, asignacion){
     html += filaBanda('peso', ev.imbalancePeso, ev.bandaFracPeso);
   }
   html += filaBanda('vatios', ev.imbalancePotencia, ev.bandaFracPotencia);
-  html += filaBanda('W/kg', ev.imbalanceWkg, ev.bandaFracWkg);
-  html += metricHtml('Desvío de trimado', (desvTrimCm>=0?'+':'') + desvTrimCm + ' cm', desvTrimCm>=0 ? 'hacia popa' : 'hacia proa', Math.abs(desvTrimCm)>umbralTrimCm()?'flag':'ok');
-  const asiento = calcularAsiento(ev);
-  if(asiento){
-    const cbOk = asiento.cbImplicito!==null && asiento.cbImplicito>0.20 && asiento.cbImplicito<0.60;
-    html += metricHtml(
-      'Asiento estimado',
-      fmt(Math.abs(asiento.anguloDeg),2) + '°',
-      (asiento.anguloDeg>=0?'apopante':'aproante') + ' · aproximado' + (asiento.cbImplicito!==null ? ' · Cb impl. ' + fmt(asiento.cbImplicito,2) : ''),
-      cbOk ? 'ok' : 'flag'
-    );
+  if(avanzado()) html += filaBanda('W/kg', ev.imbalanceWkg, ev.bandaFracWkg);
+  html += metricHtml('Desplazamiento del CG', (desvTrimCm>=0?'+':'') + desvTrimCm + ' cm', 'respecto a la referencia · ' + (desvTrimCm>=0 ? 'hacia popa' : 'hacia proa'), Math.abs(desvTrimCm)>umbralTrimCm()?'flag':'ok');
+  if(avanzado()){
+    const asiento = calcularAsiento(ev);
+    if(asiento){
+      html += metricHtml(
+        'Asiento estimado',
+        fmt(Math.abs(asiento.anguloDeg),2) + '°',
+        (asiento.anguloDeg>=0?'apopante':'aproante') + ' · orden de magnitud (GML ≈ eslora)',
+        'ok'
+      );
+    }
+    html += metricHtml('Dispersión de masas (cabeceo)', fmt(ev.iPitchNorm*100,0) + ' %', 'índice relativo, no validado: peso concentrado en los extremos');
   }
-  html += metricHtml('Momento de cabeceo', fmt(ev.iPitchNorm*100,0) + ' %', 'relativo, a minimizar (peso concentrado en los extremos)');
   html += '</div>';
 
   const t = calcularTablaUnificada(asignacion);
@@ -2055,9 +2090,9 @@ function renderMetricsHTML(ev, asignacion){
   html += '<div class="legend">' +
     '<span><i class="dot" style="background:var(--accent)"></i>Peso</span>' +
     '<span><i class="dot" style="background:var(--vatios)"></i>Vatios</span>' +
-    '<span><i class="dot" style="background:var(--patron)"></i>W/kg</span>' +
+    '<span class="solo-avanzado"><i class="dot" style="background:var(--patron)"></i>W/kg</span>' +
     '</div>' +
-    '<div class="balance-circle-caption">Cuanto más centrado cada punto, mejor equilibrada la tripulación en esa magnitud: N-S es el trimado proa-popa, E-O el equilibrio de bandas.</div>';
+    '<div class="balance-circle-caption">Cuanto más centrado cada punto, mejor equilibrada la tripulación en esa magnitud: N-S es el desplazamiento del CG proa-popa, E-O el equilibrio de bandas.</div>';
   html += '</div>';
 
   html += '<div class="cuadrantes-wrap">';
@@ -2102,7 +2137,7 @@ function svgEquilibrioCircular(ev){
   const marcadores = [
     {frac: clamp(ev.bandaFracPeso / 0.20), color:'var(--accent)', dy: -6},
     {frac: ev.bandaFracPotencia === null ? null : clamp(ev.bandaFracPotencia / 0.20), color:'var(--vatios)', dy: 0},
-    {frac: ev.bandaFracWkg === null ? null : clamp(ev.bandaFracWkg / 0.20), color:'var(--patron)', dy: 6}
+    {frac: (!avanzado() || ev.bandaFracWkg === null) ? null : clamp(ev.bandaFracWkg / 0.20), color:'var(--patron)', dy: 6}
   ];
 
   let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%; max-width:240px; display:block;">';
@@ -2299,6 +2334,17 @@ function sincronizarControles(){
   sincronizarBarco();
 
   aplicarTema();
+  aplicarModoAvanzado();
+}
+
+function aplicarModoAvanzado(){
+  const on = avanzado();
+  document.body.classList.toggle('modo-avanzado', on);
+  const btn = document.getElementById('btnAvanzado');
+  if(!btn) return;
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.setAttribute('aria-label', on ? 'Volver a la vista básica' : 'Activar modo avanzado');
+  document.getElementById('avanzadoLabel').textContent = on ? 'Avanzado' : 'Básico';
 }
 
 function aplicarTema(){
@@ -2317,6 +2363,13 @@ function renderTodo(){
 }
 
 function bind(){
+  document.getElementById('btnAvanzado').addEventListener('click', function(){
+    state.config.modoAvanzado = !state.config.modoAvanzado;
+    guardarConfig();
+    aplicarModoAvanzado();
+    renderTodo();
+  });
+
   document.getElementById('btnTema').addEventListener('click', function(){
     state.config.tema = (state.config.tema === 'claro') ? 'oscuro' : 'claro';
     guardarConfig();
@@ -2389,7 +2442,7 @@ function bind(){
   });
   [['inpManga','manga'],['inpPuntal','puntal'],['inpCalado','calado']].forEach(function(m){
     document.getElementById(m[0]).addEventListener('input', function(e){
-      state.config[m[1]] = Number(e.target.value)||0; guardarConfig(); refrescarVistasBarco();
+      state.config[m[1]] = Number(e.target.value)||0; guardarConfig(); actualizarInfoBarco(); refrescarVistasBarco();
     });
   });
   document.getElementById('inpPesoCasco').addEventListener('input', function(e){

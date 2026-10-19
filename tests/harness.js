@@ -151,6 +151,46 @@ const test = `
   const rc = procesarFilasExcel(leer('plantilla_alineacion_remo.xlsx'));
   assert(rc.remeros.length === 4 && rc.errores.length === 0, 'la plantilla de tripulación debe reimportarse limpia: ' + rc.errores.join('|'));
 
+  // ---------- vista básica / avanzada: solo cambia lo mostrado, nunca el cálculo ----------
+  const usarTipo = k => { state.config.tipoBarco = k; state.config.barcoId = ''; cargarValoresBarco(TIPOS_BARCO[k]); reconstruirSlots(); }; // sin DOM, como seleccionarBarcoPredefinido
+  assert(state.config.modoAvanzado === false, 'la vista por defecto es la básica');
+  ORDEN_TIPOS.forEach(k => {
+    usarTipo(k); cargarEjemplo(false);
+    const asig = optimizarTop3()[0].asignacion, ref = calcularPotenciaRef();
+    state.config.prioridad = 'vatios';
+    state.config.modoAvanzado = false;
+    const evB = evaluar(asig, ref), htmlB = renderMetricsHTML(evB, asig);
+    state.config.modoAvanzado = true;
+    const evA = evaluar(asig, ref), htmlA = renderMetricsHTML(evA, asig);
+    state.config.modoAvanzado = false; state.config.prioridad = 'peso';
+    assert(JSON.stringify(evB) === JSON.stringify(evA), k + ': el modo avanzado no debe cambiar el cálculo');
+    ['Asiento estimado', 'Dispersión de masas', 'Desequilibrio bandas — W/kg'].forEach(t => {
+      assert(!htmlB.includes(t), k + ': «' + t + '» no debe verse en la vista básica');
+      assert(htmlA.includes(t), k + ': «' + t + '» debe verse en la vista avanzada');
+    });
+    ['Desplazamiento del CG', 'Peso medio', 'Potencia total', 'Desequilibrio bandas — vatios'].forEach(t => {
+      assert(htmlB.includes(t) && htmlA.includes(t), k + ': «' + t + '» debe verse siempre');
+    });
+    assert(!htmlB.includes('Desvío de trimado') && !htmlA.includes('Desvío de trimado'), k + ': el nombre antiguo no debe aparecer');
+    assert(!/Cb impl/.test(htmlB + htmlA), k + ': la cifra de Cb ya no se muestra en las tarjetas');
+    const puntos = h => (h.match(/r="6\.5"/g) || []).length;
+    assert(puntos(htmlA) === puntos(htmlB) + 1, k + ': el punto de W/kg del círculo solo aparece en avanzado (' + puntos(htmlB) + ' vs ' + puntos(htmlA) + ')');
+  });
+
+  // ---------- aviso de coherencia de dimensiones (coeficiente de bloque con tripulación nominal) ----------
+  ORDEN_TIPOS.forEach(k => {
+    usarTipo(k);
+    const cb = cbNominal();
+    assert(cb > CB_RANGO_RAZONABLE[0] && cb < CB_RANGO_RAZONABLE[1] && avisoCb() === '', k + ': las dimensiones por defecto no deben dar aviso (Cb ' + cb + ')');
+    state.config.eslora = TIPOS_BARCO[k].eslora * 100; // eslora tecleada en cm por error
+    assert(avisoCb().includes('coeficiente de bloque'), k + ': una eslora absurda debe avisar');
+    state.config.eslora = TIPOS_BARCO[k].eslora; state.config.calado = 0;
+    assert(avisoCb().includes('faltan'), k + ': sin calado debe avisar de que no se puede comprobar');
+    state.config.calado = TIPOS_BARCO[k].calado;
+  });
+  usarTipo('trainera');
+  console.log('OK: vista básica/avanzada y aviso de Cb');
+
   // ---------- persistencia: localStorage como respaldo ----------
   (async () => {
     cargarEjemplo(false);
