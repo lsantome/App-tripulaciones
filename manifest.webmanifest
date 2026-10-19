@@ -1,5 +1,5 @@
 {
-  "id": "./",
+  "id": "optimizador-alineacion-remo",
   "name": "Optimizador de alineación de remo",
   "short_name": "Alineación",
   "description": "Optimiza la alineación de la tripulación en trainera, trainerilla y batel: reparto de pesos y potencia, trimado y asiento estimado.",
