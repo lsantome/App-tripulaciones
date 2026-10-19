@@ -117,5 +117,5 @@ Si abres la herramienta desde GitHub Pages, puedes instalarla: Chrome/Edge muest
 - *Importé y faltan personas*: revisa el aviso bajo el botón; filas sin nombre, peso válido o posiciones se omiten.
 - *El optimizador necesita remeros suficientes para el barco elegido* (13 en trainera, 6 en trainerilla, 4 en batel, más un patrón con posición `T`).
 - *El optimizador no da 3 propuestas o avisa de datos*: revisa que haya suficientes remeros disponibles, que las posiciones permitidas no sean incompatibles y que, en modo vatios o W/kg, todos tengan potencia.
-- *La app instalada no muestra cambios recientes*: pulsa *Actualizar* en el aviso, o ciérrala y ábrela de nuevo; la versión nueva se descarga al volver a primer plano.
+- *La app instalada no muestra cambios recientes*: pulsa *Actualizar* en el aviso, o ciérrala y ábrela de nuevo; la versión nueva se descarga al volver a primer plano. Para comprobar qué versión tienes, mira el pie de la página: `v1.x.x · build <hash> · <fecha>`; compáralo con el de otro dispositivo o con el último despliegue.
 - *Los datos guardados no aparecen en otro dispositivo o navegador*: es lo esperado; el almacenamiento es local. Usa el Excel para moverlos.

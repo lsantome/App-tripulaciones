@@ -338,6 +338,7 @@
   .pos-chip.patron-chip{grid-column:span 2;}
 
   footer{text-align:center; padding:26px; font-size:11px; color:var(--text-dim2); font-family:var(--font-mono);}
+  .version-app{margin-top:8px; user-select:all; cursor:text;}
 </style>
 </head>
 <body>
@@ -612,7 +613,10 @@
 
 </div>
 
-<footer>Esquema de casco no escalado · proa arriba, popa abajo · numeración de popa a proa: patrón (T), bancadas 1…n, proel (P) si el barco lo tiene</footer>
+<footer>Esquema de casco no escalado · proa arriba, popa abajo · numeración de popa a proa: patrón (T), bancadas 1…n, proel (P) si el barco lo tiene
+  <div id="versionApp" class="version-app"></div>
+</footer>
+<script id="buildInfo" type="application/json">{"version":"dev","fecha":"","pkg":""}</script> <!-- @build -->
 
 <script src="vendor/xlsx.full.min.js"></script>
 <script>
@@ -2543,8 +2547,30 @@ function bind(){
   });
 }
 
+/* Versión de la compilación (la estampa scripts/build-*.js en <script id="buildInfo">). El hash es el mismo que
+   usa el service worker para su caché: sirve para comprobar que un dispositivo ya tiene la última versión publicada. */
+function mostrarVersion(){
+  const el = document.getElementById('versionApp');
+  if(!el) return;
+  let info = {};
+  try { info = JSON.parse(document.getElementById('buildInfo').textContent) || {}; } catch(e){}
+  if(!info.fecha || !info.version || info.version === 'dev'){
+    el.textContent = 'Versión de desarrollo (sin compilar)';
+    return;
+  }
+  const d = new Date(info.fecha);
+  let cuando = info.fecha;
+  try {
+    if(!isNaN(d)) cuando = d.toLocaleString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+  } catch(e){}
+  el.textContent = 'v' + (info.pkg || '?') + ' · build ' + info.version + ' · ' + cuando;
+  el.title = 'Compilada el ' + info.fecha + ' (UTC). El código de build cambia con cada versión publicada: '
+    + 'si dos dispositivos muestran el mismo, tienen la misma versión.';
+}
+
 /* ============================ INIT ============================ */
 
+mostrarVersion();
 bind();
 cargarDatos();
 

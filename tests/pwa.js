@@ -58,6 +58,13 @@ ok('sw.js fuente: modo desarrollo (sin caché) y líneas @build presentes', () =
   new Function(sw.replace(/self\./g, 'globalThis.')); // sintaxis válida
 });
 
+ok('index.html fuente: línea buildInfo en modo dev, marcada con @build, y pie que la muestra', () => {
+  const html = leer('index.html').toString('utf8');
+  assert.strictEqual((html.match(/<script id="buildInfo" type="application\/json">.*<\/script> <!-- @build -->/g) || []).length, 1);
+  assert.ok(html.includes('id="versionApp"'), 'falta el elemento del pie donde se muestra la versión');
+  assert.ok(html.includes('mostrarVersion();'), 'mostrarVersion() no se invoca en el arranque');
+});
+
 // Construir de verdad (autónomo + sitio) y comprobar el resultado
 cp.execFileSync('node', [path.join(raiz, 'scripts', 'build-standalone.js')], { stdio: 'pipe' });
 cp.execFileSync('node', [path.join(raiz, 'scripts', 'build-pwa.js')], { stdio: 'pipe' });
@@ -86,6 +93,22 @@ ok('build-pwa: determinista (mismo contenido → misma versión) y sensible a ca
     const v3 = /VERSION = '([0-9a-f]{10})'/.exec(fs.readFileSync(sitio('sw.js'), 'utf8'))[1];
     assert.notStrictEqual(v1, v3, 'un cambio en index.html debe cambiar la versión de la caché');
   } finally { fs.writeFileSync(idx, orig); cp.execFileSync('node', [path.join(raiz, 'scripts', 'build-pwa.js')], { stdio: 'pipe' }); }
+});
+
+ok('build: el mismo hash y fecha en el pie de la PWA, en el autónomo y en el service worker', () => {
+  const info = (f) => JSON.parse(/<script id="buildInfo" type="application\/json">(.*?)<\/script>/.exec(fs.readFileSync(f, 'utf8'))[1]);
+  const pwa = info(sitio('index.html')), solo = info(path.join(raiz, 'dist', 'optimizador-alineacion-remo.html'));
+  const swv = /VERSION = '([0-9a-f]{10})'/.exec(fs.readFileSync(sitio('sw.js'), 'utf8'))[1];
+  assert.strictEqual(pwa.version, swv, 'el hash mostrado debe ser el de la caché del service worker');
+  assert.deepStrictEqual(pwa, solo, 'PWA y autónomo deben llevar la misma identidad');
+  assert.ok(/^\d{4}-\d\d-\d\dT\d\d:\d\d:00\.000Z$/.test(pwa.fecha) && !isNaN(new Date(pwa.fecha)), 'fecha ISO inválida: ' + pwa.fecha);
+  assert.strictEqual(pwa.pkg, JSON.parse(leer('package.json').toString('utf8')).version);
+  // la fecha no entra en el hash: SOURCE_DATE_EPOCH distinto → misma versión, distinta fecha
+  cp.execFileSync('node', [path.join(raiz, 'scripts', 'build-pwa.js')], { stdio: 'pipe', env: Object.assign({}, process.env, { SOURCE_DATE_EPOCH: '1700000000' }) });
+  const otra = info(sitio('index.html'));
+  assert.strictEqual(otra.version, pwa.version, 'la fecha no debe alterar la versión');
+  assert.strictEqual(otra.fecha, '2023-11-14T22:13:00.000Z');
+  cp.execFileSync('node', [path.join(raiz, 'scripts', 'build-pwa.js')], { stdio: 'pipe' });
 });
 
 ok('HTML autónomo: sin restos de PWA ni referencias externas', () => {

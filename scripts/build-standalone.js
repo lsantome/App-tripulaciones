@@ -4,9 +4,13 @@
 // Uso: npm run build  →  dist/optimizador-alineacion-remo.html
 const fs = require('fs'), path = require('path');
 const raiz = path.join(__dirname, '..');
+const { identidad, estampar } = require('./version.js');
 const leer = (...p) => fs.readFileSync(path.join(raiz, ...p));
 
 let html = leer('index.html').toString('utf8');
+
+// 0a) Versión (hash) y fecha de compilación, idénticas a las de la PWA para el mismo código
+html = estampar(html, identidad().info);
 
 // 0) La versión autónoma no es una PWA (se abre desde file://): se eliminan los bloques marcados con PWA:START/PWA:END
 html = html.replace(/<!-- PWA:START -->[\s\S]*?<!-- PWA:END -->\n?/g, '');

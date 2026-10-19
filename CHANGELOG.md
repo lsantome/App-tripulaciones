@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1
+- **Versión visible en la app:** el pie muestra `v<paquete> · build <hash> · <fecha y hora de compilación>`. El hash es el mismo que usa el service worker para su caché (sha256 de `sw.js` + archivos precacheados), así que sirve para comprobar que un dispositivo ya tiene la última versión publicada; la fecha se muestra en la hora local y, al pasar el cursor, en UTC. La fecha no entra en el hash (un despliegue sin cambios de código no provoca aviso de «versión nueva»). La versión autónoma lleva la misma identidad que la PWA. Sin compilar (código fuente) el pie indica «Versión de desarrollo».
+- Build: nuevo `scripts/version.js` (identidad compartida); `npm run build:pwa` genera ahora también la versión autónoma en el mismo proceso. `SOURCE_DATE_EPOCH` fija la fecha para compilaciones reproducibles.
+- Tests: el hash del pie coincide con el del service worker y con el autónomo; la fecha no altera el hash.
+
 ## 1.3.0
 - **Vista básica / avanzada** (interruptor en la barra superior, se recuerda entre sesiones). Solo cambia lo mostrado; el cálculo y las alineaciones propuestas no cambian. En básico se ocultan: desequilibrio por W/kg (y su punto en el círculo), asiento estimado, dispersión de masas, los cuatro deslizadores de pesos del optimizador y los parámetros avanzados.
 - **Renombres:** «Desvío de trimado» → «Desplazamiento del CG» (respecto a la referencia), «Trimado objetivo» → «Referencia de CG», «Momento de cabeceo» → «Dispersión de masas (cabeceo)», con textos que indican que son heurísticas no validadas. La exportación a Excel usa los nombres nuevos.
