@@ -53,6 +53,10 @@ ok('android: iconos por densidad con el tamaño correcto y fondo adaptativo del 
   assert.ok(!fs.existsSync(path.join(raiz, res, 'drawable-v24', 'ic_launcher_foreground.xml')), 'la capa vectorial de plantilla taparía el icono propio');
 });
 
+// capacitor.plugins.json lo genera `cap sync` (Git lo ignora): en un clon limpio o en CI hay que generarlo para comprobar el registro
+cp.execFileSync(process.execPath, [path.join(raiz, 'scripts', 'build-android-web.js')], { stdio: 'pipe' });
+cp.execFileSync(process.execPath, [path.join(raiz, 'node_modules', '@capacitor', 'cli', 'bin', 'capacitor'), 'sync', 'android'], { stdio: 'pipe', cwd: raiz });
+
 ok('plugins: Filesystem y Share instalados y registrados (el guardado de Excel los necesita)', () => {
   for (const p of ['@capacitor/core', '@capacitor/android', '@capacitor/cli', '@capacitor/filesystem', '@capacitor/share']) assert.ok(pkg.devDependencies[p], 'falta ' + p);
   const reg = JSON.parse(leer('android', 'app', 'src', 'main', 'assets', 'capacitor.plugins.json')).map(x => x.pkg);
