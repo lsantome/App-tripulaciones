@@ -5,7 +5,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "test": "node tests/harness.js && node tests/pwa.js",
+    "test": "node tests/harness.js && node tests/pwa.js && node tests/android.js && node tests/estandar.js",
     "build": "node scripts/build-standalone.js",
     "build:pwa": "node scripts/build-pwa.js",
     "check:site": "node scripts/check-site.js",

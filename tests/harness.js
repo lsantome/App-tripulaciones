@@ -193,6 +193,37 @@ const test = `
 
   // ---------- persistencia: localStorage como respaldo ----------
   (async () => {
+    // ---------- guardado de Excel: navegador (writeFile) frente a app Android (Filesystem + Share de Capacitor) ----------
+    const wbPrueba = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wbPrueba, XLSX.utils.aoa_to_sheet([['Nombre', 'Peso'], ['Ander', 82]]), 'Hoja');
+    const writeFileOriginal = XLSX.writeFile;
+    let aWriteFile = [];
+    XLSX.writeFile = (w, n) => { aWriteFile.push(n); };
+    assert(esAppNativa() === false, 'sin window.Capacitor no es app nativa');
+    await guardarXlsx(wbPrueba, 'web.xlsx');
+    assert(aWriteFile.join() === 'web.xlsx', 'en navegador debe usar XLSX.writeFile');
+    let escritos = [], compartidos = [];
+    window.Capacitor = { isNativePlatform: () => true, Plugins: {
+      Filesystem: { writeFile: async o => { escritos.push(o); return { uri: 'file:///cache/' + o.path }; } },
+      Share: { share: async o => { compartidos.push(o); return {}; } } } };
+    aWriteFile = [];
+    await guardarXlsx(wbPrueba, 'nativa.xlsx');
+    assert(aWriteFile.length === 0, 'en la app nativa no debe usar XLSX.writeFile (no hay descarga por blob)');
+    assert(escritos.length === 1 && escritos[0].path === 'nativa.xlsx' && escritos[0].directory === 'CACHE', 'Filesystem.writeFile mal invocado');
+    assert(escritos[0].encoding === undefined, 'sin encoding: Filesystem interpreta data como base64');
+    const leido = XLSX.read(escritos[0].data, { type: 'base64' });
+    assert(leido.SheetNames[0] === 'Hoja' && leido.Sheets.Hoja.B2.v === 82, 'el base64 enviado no es el libro de Excel');
+    assert(compartidos.length === 1 && compartidos[0].url === 'file:///cache/nativa.xlsx', 'Share.share debe recibir la URI escrita');
+    // el usuario cierra el selector: sin error visible; un fallo real sí queda reflejado
+    window.Capacitor.Plugins.Share.share = async () => { throw new Error('Share canceled'); };
+    await guardarXlsx(wbPrueba, 'cancelado.xlsx');
+    window.Capacitor.Plugins.Filesystem.writeFile = async () => { throw new Error('sin espacio'); };
+    await guardarXlsx(wbPrueba, 'fallo.xlsx'); // no debe lanzar
+    delete window.Capacitor.Plugins.Share;
+    await guardarXlsx(wbPrueba, 'sinplugin.xlsx'); // plugin ausente: avisa, no lanza
+    delete window.Capacitor; XLSX.writeFile = writeFileOriginal;
+    console.log('OK: guardado de Excel en navegador y en app nativa');
+
     // ---------- claves de almacenamiento: prefijo propio y migración desde 'trainera:' ----------
     __mem['trainera:clave-migracion'] = 'valor-antiguo';
     assert(await storageGet('clave-migracion') === 'valor-antiguo', 'debe leer la clave antigua si no existe la nueva');
