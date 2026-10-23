@@ -8,6 +8,7 @@
     "test": "node tests/harness.js && node tests/pwa.js",
     "build": "node scripts/build-standalone.js",
     "build:pwa": "node scripts/build-pwa.js",
+    "check:site": "node scripts/check-site.js",
     "build:android-web": "node scripts/build-android-web.js",
     "android:sync": "npm run build:android-web && cap sync android",
     "android:debug": "npm run android:sync && node scripts/gradle.js assembleDebug",
