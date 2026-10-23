@@ -92,4 +92,14 @@ ok('check-site: detecta una versión sin sellar y un commit que no es el de CI',
   } finally { fs.writeFileSync(idx, orig); }
 });
 
+ok('documentación: la primera versión del CHANGELOG es la de package.json y los enlaces locales del README existen', () => {
+  const cl = leer('CHANGELOG.md');
+  const primera = /^## \[(\d+\.\d+\.\d+)\] - \d{4}-\d{2}-\d{2}$/m.exec(cl);
+  assert.ok(primera, 'CHANGELOG.md sin entradas "## [X.Y.Z] - AAAA-MM-DD"');
+  assert.strictEqual(primera[1], pkg.version, 'CHANGELOG (' + primera[1] + ') y package.json (' + pkg.version + ') deben coincidir');
+  for (const f of ['README.md', 'CONTRIBUTING.md', 'CLAUDE.md', 'LICENSE', 'docs/ANDROID.md', 'docs/GUIA_DE_USO.md', 'docs/MODELO.md']) assert.ok(fs.existsSync(path.join(raiz, f)), 'falta ' + f);
+  for (const m of leer('README.md').matchAll(/\]\((?!https?:|#|mailto:)([^)#\s]+)/g)) assert.ok(fs.existsSync(path.join(raiz, m[1])), 'enlace roto en README.md: ' + m[1]);
+  assert.ok(leer('README.md').includes('https://lsantome.github.io/Optimizador-Tripulaciones-Remo/'), 'el README debe llevar la URL real de la app');
+});
+
 Promise.all(pendientes).then(() => console.log('Estándar: ' + n + ' pruebas OK'));
