@@ -193,15 +193,26 @@ const test = `
 
   // ---------- persistencia: localStorage como respaldo ----------
   (async () => {
+    // ---------- claves de almacenamiento: prefijo propio y migración desde 'trainera:' ----------
+    __mem['trainera:clave-migracion'] = 'valor-antiguo';
+    assert(await storageGet('clave-migracion') === 'valor-antiguo', 'debe leer la clave antigua si no existe la nueva');
+    assert(__mem['optimizador:clave-migracion'] === 'valor-antiguo', 'debe copiarla al prefijo nuevo');
+    assert(__mem['trainera:clave-migracion'] === 'valor-antiguo', 'no debe borrar la antigua (podría ser de otra app)');
+    __mem['optimizador:clave-migracion'] = 'valor-nuevo';
+    assert(await storageGet('clave-migracion') === 'valor-nuevo', 'la clave nueva tiene prioridad sobre la antigua');
+    await storageSet('otra', 'x');
+    assert(__mem['optimizador:otra'] === 'x' && !('trainera:otra' in __mem), 'las claves nuevas se escriben solo con el prefijo nuevo');
+    console.log('OK: claves de almacenamiento con prefijo propio y migración');
+
     cargarEjemplo(false);
     const n = state.remeros.length;
     await guardarRemeros();
-    assert(__mem['trainera:plantilla-remeros'], 'no se escribió en localStorage');
+    assert(__mem['optimizador:plantilla-remeros'], 'no se escribió en localStorage');
     state.remeros = [];
     const raw = await storageGet('plantilla-remeros');
     assert(JSON.parse(raw).length === n, 'la plantilla recuperada no coincide');
     await guardarBarcos();
-    assert(JSON.parse(__mem['trainera:maestro-barcos']).length === 4, 'el maestro no se guardó');
+    assert(JSON.parse(__mem['optimizador:maestro-barcos']).length === 4, 'el maestro no se guardó');
     window.storage = { get: async () => { throw new Error('boom'); }, set: async () => { throw new Error('boom'); } };
     assert(await storageGet('x') === null, 'un fallo de window.storage debe devolver null');
     console.log('OK: persistencia localStorage');

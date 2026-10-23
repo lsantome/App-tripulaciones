@@ -616,7 +616,7 @@
 <footer>Esquema de casco no escalado · proa arriba, popa abajo · numeración de popa a proa: patrón (T), bancadas 1…n, proel (P) si el barco lo tiene
   <div id="versionApp" class="version-app"></div>
 </footer>
-<script id="buildInfo" type="application/json">{"version":"dev","fecha":"","pkg":""}</script> <!-- @build -->
+<script id="buildInfo" type="application/json">{"version":"dev","commit":"","fecha":"","pkg":""}</script> <!-- @build -->
 
 <script src="vendor/xlsx.full.min.js"></script>
 <script>
@@ -1391,7 +1391,10 @@ function descargarPlantillaBarcos(){
 
 /* Capa de almacenamiento: usa window.storage (Claude.ai) si existe; si no, localStorage del navegador.
    Si ninguno está disponible (modo privado, bloqueado, file:// restringido) la app funciona igual, sin guardar. */
-const PREFIJO_LS = 'trainera:';
+const PREFIJO_LS = 'optimizador:';
+/* Hasta la 1.3.x las claves llevaban el prefijo genérico 'trainera:' (puede coincidir con otras apps del mismo origen). Al leer, si
+   no existe la clave nueva se toma la antigua y se copia al prefijo nuevo. La antigua NO se borra: podría ser de otra app. */
+const PREFIJO_LS_ANTIGUO = 'trainera:';
 function lsDisponible(){
   try{ return typeof localStorage !== 'undefined' && localStorage !== null; }catch(e){ return false; }
 }
@@ -1400,7 +1403,14 @@ async function storageGet(clave){
     try{ const r = await window.storage.get(clave); return (r && r.value) ? r.value : null; }catch(e){ return null; }
   }
   if(lsDisponible()){
-    try{ return localStorage.getItem(PREFIJO_LS + clave); }catch(e){ return null; }
+    try{
+      let v = localStorage.getItem(PREFIJO_LS + clave);
+      if(v === null){
+        const antiguo = localStorage.getItem(PREFIJO_LS_ANTIGUO + clave);
+        if(antiguo !== null){ v = antiguo; try{ localStorage.setItem(PREFIJO_LS + clave, antiguo); }catch(e){} }
+      }
+      return v;
+    }catch(e){ return null; }
   }
   return null;
 }
@@ -2547,25 +2557,23 @@ function bind(){
   });
 }
 
-/* Versión de la compilación (la estampa scripts/build-*.js en <script id="buildInfo">). El hash es el mismo que
-   usa el service worker para su caché: sirve para comprobar que un dispositivo ya tiene la última versión publicada. */
+/* Versión de la compilación (la estampan los scripts de build en <script id="buildInfo">): `v<paquete> · build <commit> · <fecha>`.
+   El tooltip añade el código de la caché (hash de contenido), que cambia solo si cambia el código de la app. */
 function mostrarVersion(){
   const el = document.getElementById('versionApp');
   if(!el) return;
   let info = {};
   try { info = JSON.parse(document.getElementById('buildInfo').textContent) || {}; } catch(e){}
   if(!info.fecha || !info.version || info.version === 'dev'){
-    el.textContent = 'Versión de desarrollo (sin compilar)';
+    el.textContent = 'desarrollo';
     return;
   }
   const d = new Date(info.fecha);
-  let cuando = info.fecha;
-  try {
-    if(!isNaN(d)) cuando = d.toLocaleString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
-  } catch(e){}
-  el.textContent = 'v' + (info.pkg || '?') + ' · build ' + info.version + ' · ' + cuando;
-  el.title = 'Compilada el ' + info.fecha + ' (UTC). El código de build cambia con cada versión publicada: '
-    + 'si dos dispositivos muestran el mismo, tienen la misma versión.';
+  let dia = String(info.fecha).slice(0, 10);
+  try { if(!isNaN(d)) dia = d.toLocaleDateString('sv-SE'); } catch(e){} // AAAA-MM-DD en la hora local
+  el.textContent = 'v' + (info.pkg || '?') + ' · build ' + (info.commit || '?') + ' · ' + dia;
+  el.title = 'Compilada el ' + info.fecha + ' (UTC) · código ' + info.version + '. El código cambia solo cuando cambia la app: '
+    + 'si dos dispositivos muestran el mismo build, tienen la misma versión.';
 }
 
 /* ============================ INIT ============================ */

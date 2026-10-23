@@ -70,6 +70,7 @@ ok('index.html fuente: línea buildInfo en modo dev, marcada con @build, y pie q
 cp.execFileSync('node', [path.join(raiz, 'scripts', 'build-standalone.js')], { stdio: 'pipe' });
 cp.execFileSync('node', [path.join(raiz, 'scripts', 'build-pwa.js')], { stdio: 'pipe' });
 const sitio = (...p) => path.join(raiz, 'dist', 'site', ...p);
+const leerBuildInfoFuente = () => /<script id="buildInfo" type="application\/json">(.*?)<\/script>/.exec(leer('index.html').toString('utf8'))[1];
 
 ok('build-pwa: sw.js con versión y precaché; todo lo precacheado existe en dist/site', () => {
   const sw = fs.readFileSync(sitio('sw.js'), 'utf8');
@@ -104,12 +105,32 @@ ok('build: el mismo hash y fecha en el pie de la PWA, en el autónomo y en el se
   assert.deepStrictEqual(pwa, solo, 'PWA y autónomo deben llevar la misma identidad');
   assert.ok(/^\d{4}-\d\d-\d\dT\d\d:\d\d:00\.000Z$/.test(pwa.fecha) && !isNaN(new Date(pwa.fecha)), 'fecha ISO inválida: ' + pwa.fecha);
   assert.strictEqual(pwa.pkg, JSON.parse(leer('package.json').toString('utf8')).version);
+  assert.ok(/^[0-9a-f]{7}\+?$|^local$/.test(pwa.commit), 'commit del build inválido: ' + pwa.commit);
   // la fecha no entra en el hash: SOURCE_DATE_EPOCH distinto → misma versión, distinta fecha
   cp.execFileSync('node', [path.join(raiz, 'scripts', 'build-pwa.js')], { stdio: 'pipe', env: Object.assign({}, process.env, { SOURCE_DATE_EPOCH: '1700000000' }) });
   const otra = info(sitio('index.html'));
   assert.strictEqual(otra.version, pwa.version, 'la fecha no debe alterar la versión');
   assert.strictEqual(otra.fecha, '2023-11-14T22:13:00.000Z');
+  // el commit tampoco entra en el hash (un commit de documentación no debe forzar «versión nueva»)
+  cp.execFileSync('node', [path.join(raiz, 'scripts', 'build-pwa.js')], { stdio: 'pipe', env: Object.assign({}, process.env, { BUILD_COMMIT: 'ABCDEF0123456789' }) });
+  const otroCommit = info(sitio('index.html'));
+  assert.strictEqual(otroCommit.commit, 'abcdef0', 'BUILD_COMMIT debe fijar el commit (7 caracteres)');
+  assert.strictEqual(otroCommit.version, pwa.version, 'el commit no debe alterar la versión de la caché');
   cp.execFileSync('node', [path.join(raiz, 'scripts', 'build-pwa.js')], { stdio: 'pipe' });
+});
+
+ok('pie: «v<paquete> · build <commit> · AAAA-MM-DD» (y «desarrollo» sin compilar)', () => {
+  const html = fs.readFileSync(sitio('index.html'), 'utf8');
+  const fn = /function mostrarVersion\(\)\{[\s\S]*?\n\}\n/.exec(html)[0];
+  const ejecutar = (buildInfo) => {
+    const el = { textContent: '', title: '' };
+    new Function('document', fn + '; mostrarVersion();')({ getElementById: (id) => id === 'versionApp' ? el : { textContent: buildInfo } });
+    return el;
+  };
+  const e = ejecutar(JSON.stringify({ version: '0123456789', commit: 'abc1234', fecha: '2026-10-24T12:00:00.000Z', pkg: '1.4.0' }));
+  assert.ok(/^v1\.4\.0 · build abc1234 · 2026-10-2[45]$/.test(e.textContent), e.textContent);
+  assert.ok(e.title.includes('0123456789'), 'el tooltip debe incluir el código de la caché');
+  assert.strictEqual(ejecutar(leerBuildInfoFuente()).textContent, 'desarrollo');
 });
 
 ok('HTML autónomo: sin restos de PWA ni referencias externas', () => {
