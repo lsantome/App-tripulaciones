@@ -16,9 +16,10 @@ ok('manifest: campos obligatorios y rutas relativas', () => {
   assert.ok(m.start_url.startsWith('.') && m.scope.startsWith('.'), 'start_url y scope deben ser relativos (subruta de Pages)');
   // Chrome resuelve `id` contra el ORIGEN de start_url (no contra su carpeta): "./" o "/" darían la raíz del dominio y
   // colisionarían con cualquier otra PWA de https://<usuario>.github.io. Debe ser un identificador propio de esta app.
-  const idResuelto = new URL(m.id, new URL(m.start_url, 'https://usuario.github.io/optimizador-alineacion-remo/').origin);
+  const idResuelto = new URL(m.id, new URL(m.start_url, 'https://usuario.github.io/Optimizador-Tripulaciones-Remo/').origin);
   assert.ok(idResuelto.pathname !== '/' && idResuelto.pathname.length > 1, 'manifest.id resuelve a la raíz del origen (' + idResuelto.href + '): colisiona con otras PWA del mismo dominio');
-  assert.ok(idResuelto.pathname.includes('optimizador-alineacion-remo'), 'manifest.id debe ser único para esta app');
+  // El id es la identidad de la app, NO el nombre del repositorio: se mantiene aunque el repo se renombre (Optimizador-Tripulaciones-Remo)
+  assert.ok(idResuelto.pathname.includes('optimizador-alineacion-remo'), 'manifest.id debe ser único para esta app y estable');
   assert.ok(m.short_name.length <= 12, 'short_name demasiado largo para el icono');
   const textos = JSON.stringify(m);
   assert.ok(!/"\/[^"]/.test(textos), 'rutas absolutas con "/" inicial romperían el despliegue bajo /<repo>/');
@@ -97,7 +98,7 @@ ok('build-pwa: determinista (mismo contenido → misma versión) y sensible a ca
 
 ok('build: el mismo hash y fecha en el pie de la PWA, en el autónomo y en el service worker', () => {
   const info = (f) => JSON.parse(/<script id="buildInfo" type="application\/json">(.*?)<\/script>/.exec(fs.readFileSync(f, 'utf8'))[1]);
-  const pwa = info(sitio('index.html')), solo = info(path.join(raiz, 'dist', 'optimizador-alineacion-remo.html'));
+  const pwa = info(sitio('index.html')), solo = info(path.join(raiz, 'dist', 'optimizador-tripulaciones-remo.html'));
   const swv = /VERSION = '([0-9a-f]{10})'/.exec(fs.readFileSync(sitio('sw.js'), 'utf8'))[1];
   assert.strictEqual(pwa.version, swv, 'el hash mostrado debe ser el de la caché del service worker');
   assert.deepStrictEqual(pwa, solo, 'PWA y autónomo deben llevar la misma identidad');
@@ -112,9 +113,9 @@ ok('build: el mismo hash y fecha en el pie de la PWA, en el autónomo y en el se
 });
 
 ok('HTML autónomo: sin restos de PWA ni referencias externas', () => {
-  const h = fs.readFileSync(path.join(raiz, 'dist', 'optimizador-alineacion-remo.html'), 'utf8');
+  const h = fs.readFileSync(path.join(raiz, 'dist', 'optimizador-tripulaciones-remo.html'), 'utf8');
   assert.ok(!/PWA:|manifest\.webmanifest|serviceWorker|apple-touch-icon/.test(h));
-  assert.ok(fs.existsSync(sitio('optimizador-alineacion-remo.html')), 'el autónomo debe publicarse junto al sitio');
+  assert.ok(fs.existsSync(sitio('optimizador-tripulaciones-remo.html')), 'el autónomo debe publicarse junto al sitio');
 });
 
 console.log('PWA: ' + n + ' pruebas OK');
