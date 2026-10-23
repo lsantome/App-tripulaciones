@@ -1351,6 +1351,35 @@ function manejarArchivoBarcos(file){
   reader.readAsArrayBuffer(file);
 }
 
+/* Guardado de Excel. En navegador: descarga directa (XLSX.writeFile). En la app Android (Capacitor) las descargas por
+   <a download>/blob no funcionan en el WebView: se escribe el archivo en la caché de la app y se abre el selector de
+   compartir del sistema (guardar en Drive/Descargas, enviar por WhatsApp o correo…). Los plugins Filesystem y Share
+   se obtienen de window.Capacitor.Plugins; no hay dependencias de npm en el HTML. */
+function esAppNativa(){
+  const C = window.Capacitor;
+  return !!(C && typeof C.isNativePlatform === 'function' && C.isNativePlatform());
+}
+function guardarXlsx(wb, nombre, idEstado){
+  if(!esAppNativa()){ XLSX.writeFile(wb, nombre); return Promise.resolve(); }
+  const P = window.Capacitor.Plugins || {};
+  if(!P.Filesystem || !P.Share){
+    mostrarEstadoImport('Esta compilación de la app no incluye el guardado de archivos (faltan los plugins Filesystem/Share).', 'warn', idEstado);
+    return Promise.resolve();
+  }
+  return Promise.resolve().then(function(){
+    const b64 = XLSX.write(wb, {bookType:'xlsx', type:'base64'});
+    return P.Filesystem.writeFile({path: nombre, data: b64, directory: 'CACHE'});
+  }).then(function(r){
+    return P.Share.share({title: nombre, dialogTitle: 'Guardar o compartir ' + nombre, url: r.uri});
+  }).then(function(){
+    mostrarEstadoImport('Archivo listo: ' + nombre, 'ok', idEstado);
+  }).catch(function(e){
+    const m = String((e && e.message) || e || '');
+    if(/cancel/i.test(m)) return; // el usuario cerró el selector
+    mostrarEstadoImport('No se pudo guardar ' + nombre + ': ' + m, 'warn', idEstado);
+  });
+}
+
 function descargarPlantillaBarcos(){
   if(typeof XLSX === 'undefined'){
     mostrarEstadoImport('No se pudo cargar la librería de Excel (¿falta la carpeta vendor/ junto a index.html?).', 'warn', 'importStatusBarcos');
@@ -1384,7 +1413,7 @@ function descargarPlantillaBarcos(){
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Barcos');
   XLSX.utils.book_append_sheet(wb, ws2, 'Leeme');
-  XLSX.writeFile(wb, 'plantilla_barcos.xlsx');
+  guardarXlsx(wb, 'plantilla_barcos.xlsx', 'importStatusBarcos');
 }
 
 /* ============================ ALMACENAMIENTO ============================ */
@@ -1598,7 +1627,7 @@ function descargarPlantillaExcel(){
   ws['!cols'] = [{wch:22},{wch:11},{wch:26},{wch:12},{wch:24}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Plantilla');
-  XLSX.writeFile(wb, 'plantilla_alineacion_remo.xlsx');
+  guardarXlsx(wb, 'plantilla_alineacion_remo.xlsx');
 }
 
 function exportarTripulacionExcel(asignacion, nombreArchivo){
@@ -1684,7 +1713,7 @@ function exportarTripulacionExcel(asignacion, nombreArchivo){
   const wsR = XLSX.utils.aoa_to_sheet(filasResumen);
   wsR['!cols'] = [{wch:42},{wch:20}];
   XLSX.utils.book_append_sheet(wb, wsR, 'Resumen');
-  XLSX.writeFile(wb, nombreArchivo || 'tripulacion.xlsx');
+  guardarXlsx(wb, nombreArchivo || 'tripulacion.xlsx');
 }
 
 /* ============================ UTIL ============================ */
@@ -2590,6 +2619,13 @@ cargarDatos();
    El build del HTML autónomo elimina este bloque. */
 (function(){
   if(!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
+  // App Android (Capacitor): los archivos van dentro del APK y se actualizan con él; un service worker cache-first
+  // taparía las versiones nuevas del APK. Se retira cualquiera que hubiera.
+  if(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()){
+    navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); }).catch(function(){});
+    if(window.caches) caches.keys().then(function(ks){ ks.filter(function(k){ return k.indexOf('oar-') === 0; }).forEach(function(k){ caches.delete(k); }); }).catch(function(){});
+    return;
+  }
   var habiaControlador = !!navigator.serviceWorker.controller;
   var aplicando = false;
 

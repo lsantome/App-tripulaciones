@@ -7,9 +7,20 @@
   "scripts": {
     "test": "node tests/harness.js && node tests/pwa.js",
     "build": "node scripts/build-standalone.js",
-    "build:pwa": "node scripts/build-pwa.js"
+    "build:pwa": "node scripts/build-pwa.js",
+    "build:android-web": "node scripts/build-android-web.js",
+    "android:sync": "npm run build:android-web && cap sync android",
+    "android:debug": "npm run android:sync && node scripts/gradle.js assembleDebug",
+    "android:release": "npm run android:sync && node scripts/gradle.js assembleRelease bundleRelease"
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/share": "^8.0.3"
   }
 }
